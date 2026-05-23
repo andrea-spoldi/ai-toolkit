@@ -84,8 +84,12 @@ class BaseCaptioner(BaseExtensionProcess):
         self.file_paths = []
         device = self.caption_config.device
         if device == "cuda" and not torch.cuda.is_available():
-            print("Warning: CUDA requested but not available, falling back to CPU")
-            device = "cpu"
+            if torch.backends.mps.is_available():
+                print("Warning: CUDA not available, falling back to MPS (Apple Silicon)")
+                device = "mps"
+            else:
+                print("Warning: CUDA not available, falling back to CPU")
+                device = "cpu"
         self.device_torch = torch.device(device)
         self.torch_dtype = get_torch_dtype(self.caption_config.dtype)
 
